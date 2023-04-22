@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+
+
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title></title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+</head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">Navbar</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+        <li class="nav-item active">
+        <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/bar">Bar Chart<span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/pie">Pie Chart</a>
+      </li>
+        <li class="nav-item">
+        <a class="nav-link" href="/sum">Sum</a>
+      </li>
+              </li>
+        <li class="nav-item">
+        <a class="nav-link" href="/histogram">Histogram</a>
+      </li>
+        </li>
+        <li class="nav-item">
+        <a class="nav-link" href="/datePie">Dates</a>
+      </li>
+              <li class="nav-item">
+        <a class="nav-link" href="/datePie">Hypothesis Testing</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+<br>
+
+        <br>
+        <br>
+        <br>
+        <h1 style="color:white; text-align:center;">Hypothesis Testing</h1>
+
+   <div class="container">
+<div class="row">
+  <div class="col-md-6">
+    <br>
+    <h2 style="color:white">Species 1</h2>
+    <form method="POST">
+      <div class="form-group">
+        <label for="species1-select" style="color:white">Select Species:</label>
+        <select class="form-control" id="species1-select" name="species1">
+    {% for species in species_values %}
+      <option>{{ species }}</option>
+    {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="null-hypothesis-input" style="color:white">Enter Null Hypothesis: Ho = </label>
+        <input type="number" id="null-hypothesis-input1" name="null_hypothesis1" min="0" max="1" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="confidence1-select" style="color:white">Select Signficance Level α:</label>
+        <select class="form-control" id="confidence1-select" name="confidence1">
+          <option>0.1</option>
+          <option>0.05</option>
+          <option>0.01</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="alternative1-select" style="color:white">Select Alternative Hypothesis:</label>
+        <select class="form-control" id="alternative1-select" name="alternative1">
+          <option>Less Than</option>
+          <option>Greater Than</option>
+          <option>Not Equal</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary" id="submit-single-test-btn" name="submit_single_test">Submit Single Test</button>
+  </div>
+  <div class="col-md-6">
+    <br>
+    <h2 style="color:white">Species 2</h2>
+
+      <div class="form-group">
+        <label for="species2-select" style="color:white">Select Species:</label>
+        <select class="form-control" id="species2-select" name="species2">
+        {% for species in species_values %}
+          <option>{{ species }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="null-hypothesis-input2" style="color:white">Enter Null Hypothesis: Ho = </label>
+        <input type="number" id="null-hypothesis-input2" name="null_hypothesis2" min="0" max="1" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="confidence2-select" style="color:white">Select Signficance Level α:</label>
+        <select class="form-control" id="confidence2-select" name="confidence2">
+          <option>0.1</option>
+          <option>0.05</option>
+          <option>0.01</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="alternative2-select" style="color:white">Select Alternative Hypothesis:</label>
+        <select class="form-control" id="alternative2-select" name="alternative2">
+          <option>Less Than</option>
+          <option>Greater Than</option>
+          <option>Not Equal</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submit-two-test-btn" name="submit_two_test">Submit Two Test</button>
+    </form>
+  </div>
+</div>
+
+    <div class="col-md-6">
+    <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+    <h2 style="color:white">Results</h2>
+    <div id="distribution-chart"></div>
+    <br>
+    <h3 style="color:white">Hypothesis Test</h3>
+
+      {% if z_statistic is not none %}
+      <div id="hypothesis-results">
+        <p style="color:white">Z-statistic: {{ z_statistic }}</p>
+        <p style="color:white">P-value: {{ p_value }}</p>
+        <p style="color:white">Critical value: {{ critical_value }}</p>
+        <p style="color:white">Reject null hypothesis: {{ reject_null_hypothesis }}</p>
+        <p style="color:white">Lower bound: {{ lower_bound }}</p>
+        <p style="color:white">Upper bound: {{ upper_bound }}</p>
+      </div>
+      {% endif %}
+</div>
+
+
+
+
+<script>
+  // Add custom validation to value1 input field
+  const value1Input = document.getElementById("value1-input");
+  const value1Error = document.getElementById("value1-error");
+
+  value1Input.addEventListener("input", () => {
+    const value = parseFloat(value1Input.value);
+    if (isNaN(value) || value < 0 || value > 1) {
+      value1Input.setCustomValidity("Enter between 0 and 1");
+      value1Error.textContent = "Enter between 0 and 1";
+    } else {
+      value1Input.setCustomValidity("");
+      value1Error.textContent = "";
+    }
+  });
+</script>
+
+     <script>
+  // Add custom validation to value1 input field
+  const value1Input = document.getElementById("value2-input");
+  const value1Error = document.getElementById("value2-error");
+
+  value1Input.addEventListener("input", () => {
+    const value = parseFloat(value1Input.value);
+    if (isNaN(value) || value < 0 || value > 1) {
+      value2Input.setCustomValidity("Enter between 0 and 1");
+      value2Error.textContent = "Enter between 0 and 1";
+    } else {
+      value2Input.setCustomValidity("");
+      value2Error.textContent = "";
+    }
+  });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<script src="{{ url_for('static', filename='javascript/c3.min.js') }}"></script>
+<script src="{{ url_for('static', filename='javascript/main.js') }}"></script>
+</html>

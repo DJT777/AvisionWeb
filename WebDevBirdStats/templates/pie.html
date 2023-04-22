@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">Navbar</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/bar">Bar Chart</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Pie Chart<span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/sum">Sum</a>
+          </li>
+          <li class="nav-item">
+        <a class="nav-link" href="/datePie">Hypothesis Testing</a>
+      </li>
+        </ul>
+      </div>
+    </nav>
+    <title>Species Count Pie Chart</title>
+    <!-- Load Google Charts API -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      // Load the pie chart package
+      google.charts.load('current', {'packages':['corechart']});
+
+      // Draw the pie chart when Google Charts is ready
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        // Get the chart data from Flask and parse it as JSON
+        var chart_data = JSON.parse('{{ json_file | safe }}');
+
+        // Create the data table
+        var data = google.visualization.arrayToDataTable(chart_data);
+
+        // Set chart options
+        var options = {
+          title: 'Species Count',
+          pieHole: 0.4,
+          legend: { position: 'none' }
+        };
+
+        // Create and draw the chart
+        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #chart_div {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chart_div"></div>
+  </body>
+</html>
