@@ -6,6 +6,7 @@ import numpy as np
 
 
 app = Flask(__name__, static_url_path='/content/AvisionWeb/WebDevBirdStats/static')
+run_with_ngrok(app)
 
 
 from scipy.stats import norm
