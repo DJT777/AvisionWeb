@@ -3,11 +3,9 @@ import pymysql
 import json
 import pandas as pd
 import numpy as np
-from flask_ngrok import run_with_ngrok
 
 
-app = Flask(__name__, static_url_path='/content/AvisionWeb/WebDevBirdStats/static').
-run_with_ngrok(app)
+app = Flask(__name__, static_url_path='/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static')
 
 
 from scipy.stats import norm
@@ -21,18 +19,20 @@ def perform_proportion_test(successes, total, null_hypothesis, alternative, conf
     # Calculate the z-score
     z_statistic = (sample_proportion - null_hypothesis) / standard_error
 
+    # Calculate the critical value for the given confidence interval
     confidence_critical_value = norm.ppf(1 - confidence/2)
 
-    # Calculate the critical value for the given confidence level and alternative hypothesis
+    # Calculate the critical value for the given confidence level
     if confidence == 0.1:
-        critical_value = 1.645
+        critical_value = 1.2816
     elif confidence == 0.05:
-        critical_value = 1.96
+        critical_value = 1.6449
     elif confidence == 0.01:
-        critical_value = 2.576
+        critical_value = 2.3263
 
     # Determine if we reject the null hypothesis
     if alternative == "Less Than":
+        critical_value = -critical_value
         reject_null_hypothesis = z_statistic < critical_value
     elif alternative == "Greater Than":
         reject_null_hypothesis = z_statistic > critical_value
@@ -53,7 +53,7 @@ def perform_proportion_test(successes, total, null_hypothesis, alternative, conf
     lower_bound = sample_proportion - margin_of_error
     upper_bound = sample_proportion + margin_of_error
 
-    return z_statistic, p_value, critical_value, reject_null_hypothesis, lower_bound, upper_bound
+    return z_statistic, p_value, critical_value, confidence_critical_value, reject_null_hypothesis, lower_bound, upper_bound
 
 
 import numpy as np
@@ -75,19 +75,19 @@ def perform_two_proportion_test(successes1, successes2, total1, total2, null_hyp
 
     # Calculate the critical value for the given confidence level
     if confidence == 0.1:
-        critical_value = 1.645
+        critical_value = 1.2816
     elif confidence == 0.05:
-        critical_value = 1.96
+        critical_value = 1.6449
     elif confidence == 0.01:
-        critical_value = 2.576
+        critical_value = 2.3263
 
     # Determine if we reject the null hypothesis
     if alternative == "Less Than":
-        reject_null_hypothesis = z_statistic < critical_value
+        reject_null_hypothesis = z_statistic < -critical_value
     elif alternative == "Greater Than":
         reject_null_hypothesis = z_statistic > critical_value
     else:
-        reject_null_hypothesis = abs(z_statistic) > critical_value
+        reject_null_hypothesis = abs(z_statistic) > norm.ppf(1 - confidence/2)
 
     # Calculate the p-value
     if alternative == "Less Than":
@@ -103,7 +103,7 @@ def perform_two_proportion_test(successes1, successes2, total1, total2, null_hyp
     lower_bound = (sample_proportion1 - sample_proportion2) - margin_of_error
     upper_bound = (sample_proportion1 - sample_proportion2) + margin_of_error
 
-    return z_statistic, p_value, critical_value, reject_null_hypothesis, lower_bound, upper_bound
+    return z_statistic, p_value, critical_value, confidence_critical_value, reject_null_hypothesis, lower_bound, upper_bound
 
 
 
@@ -111,7 +111,7 @@ def perform_two_proportion_test(successes1, successes2, total1, total2, null_hyp
 @app.route("/histogram", methods=['GET'])
 def data():
     # Load the CSV file into a pandas DataFrame
-    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
 
     # Extract confidences from the dataset
     confidences = df['CONFIDENCE'].astype(float)
@@ -132,7 +132,7 @@ def data():
 @app.route("/hypothesis", methods=['GET', 'POST'])
 def hypothesis():
     # Load the CSV file into a pandas DataFrame
-    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
     # Get the unique species values
     species_values = df['SPECIES'].unique().tolist()
 
@@ -155,10 +155,10 @@ def hypothesis():
 
 
         # Perform the proportion test using the selected values
-        z_statistic, p_value, critical_value, reject_null_hypothesis, lower_bound, upper_bound = perform_proportion_test(successes, total, null_hypothesis, alternative1, confidence1)
+        z_statistic, p_value, critical_value, confidence_critical_value, reject_null_hypothesis, lower_bound, upper_bound = perform_proportion_test(successes, total, null_hypothesis, alternative1, confidence1)
 
         return render_template("hypothesis.html", species_values=species_values, z_statistic=z_statistic,
-                               p_value=p_value, critical_value=critical_value,
+                               p_value=p_value, critical_value=critical_value, confidence_critical_value=confidence_critical_value,
                                reject_null_hypothesis=reject_null_hypothesis, lower_bound=lower_bound,
                                upper_bound=upper_bound)
 
@@ -186,11 +186,11 @@ def hypothesis():
         proportion2 = successes2 / total
 
         # Perform the proportion test using the selected values
-        z_statistic, p_value, critical_value, reject_null_hypothesis, lower_bound, upper_bound = perform_two_proportion_test(
+        z_statistic, p_value, critical_value, confidence_critical_value, reject_null_hypothesis, lower_bound, upper_bound = perform_two_proportion_test(
             successes1, successes2, total, total, null_hypothesis2, alternative2, confidence2)
 
         return render_template("hypothesis.html", species_values=species_values, z_statistic=z_statistic,
-                               p_value=p_value, critical_value=critical_value,
+                               p_value=p_value, critical_value=critical_value, confidence_critical_value=confidence_critical_value,
                                reject_null_hypothesis=reject_null_hypothesis, lower_bound=lower_bound,
                                upper_bound=upper_bound)
 
@@ -222,7 +222,7 @@ import pandas as pd
 # Assuming you have a pandas dataframe named "df" containing your dataset
 @app.route("/pie", methods=['GET'])
 def pie():
-    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
 
     chart_data = [("SPECIES", "COUNT(*)")]
     for species, count in df.groupby("SPECIES")["PRIMARY_KEY"].count().items():
@@ -232,7 +232,7 @@ def pie():
 
 @app.route("/bar", methods=['GET'])
 def bar():
-    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
 
     chart_data = [("SPECIES", "COUNT(*)")]
     for species, count in df.groupby("SPECIES")["PRIMARY_KEY"].count().items():
@@ -263,3 +263,5 @@ def conf():
 if __name__ == '__main__':
     app.run()
 
+if __name__ == "__main__":
+    app.run(debug=True)
