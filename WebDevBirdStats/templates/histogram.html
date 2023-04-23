@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -26,34 +27,30 @@
     </nav>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
-    // Load the histogram chart package
-    google.charts.load('current', {'packages':['corechart']});
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
 
-    // Draw the histogram chart when Google Charts is ready
-    google.charts.setOnLoadCallback(drawChart);
+      function drawChart() {
+  console.log('Drawing chart...'); // Add console log statement
+  var data = google.visualization.arrayToDataTable({{ histogramData|tojson }}, true);
 
-    function drawChart() {
-        // Get the histogram data from the Flask route
-        const histogramData = JSON.parse('{{ histogramData | tojson | safe }}');
 
-        // Convert the data to a format that Google Charts can use
-        const chartData = [['Confidence', 'Count']];
-        for (let i = 0; i < histogramData.length; i++) {
-            chartData.push([histogramData[i].CONFIDENCE, histogramData[i].COUNT]);
-        }
+  var options = {
+    title: 'Histogram of Random Sample Sums',
+    legend: { position: 'none' },
+    histogram: {
+      bucketSize: 0.1,
+      minValue: {{ min }},
+      maxValue: 98,
+    },
+  };
 
-        // Create the histogram chart using Google Charts
-        const data = google.visualization.arrayToDataTable(chartData);
-        const options = {
-            title: 'Histogram of Confidence Scores',
-            legend: { position: 'none' },
-            histogram: { bucketSize: 500 }
-        };
-        const chart = new google.visualization.Histogram(document.getElementById('histogram_div'));
-        chart.draw(data, options);
-    }
-</script>
+  var chart = new google.visualization.Histogram(document.getElementById('histogram_div'));
 
+  console.log('Chart:', chart); // Add console log statement
+  chart.draw(data, options);
+}
+    </script>
   </head>
   <body>
     <div class="container">
@@ -62,7 +59,7 @@
           <div id="histogram_div" style="width: 150%; height: 750px; margin: auto; margin-left: 150px; "></div>
         </div>
         <div class="col-md-6 mx-auto" >
-          <div id="chart_div" ></div>
+          <div id="chart_div" style="width: 100%; height: 500px;"></div>
         </div>
       </div>
     </div>

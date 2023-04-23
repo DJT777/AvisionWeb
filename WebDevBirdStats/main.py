@@ -3,9 +3,11 @@ import pymysql
 import json
 import pandas as pd
 import numpy as np
+from flask_ngrok import run_with_ngrok
 
 
-app = Flask(__name__, static_url_path='/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static')
+app = Flask(__name__, static_url_path='/content/AvisionWeb/WebDevBirdStats/static').
+run_with_ngrok(app)
 
 
 from scipy.stats import norm
@@ -54,6 +56,8 @@ def perform_proportion_test(successes, total, null_hypothesis, alternative, conf
     return z_statistic, p_value, critical_value, reject_null_hypothesis, lower_bound, upper_bound
 
 
+import numpy as np
+from scipy.stats import norm
 
 def perform_two_proportion_test(successes1, successes2, total1, total2, null_hypothesis, alternative, confidence):
     # Calculate the sample proportions
@@ -69,6 +73,7 @@ def perform_two_proportion_test(successes1, successes2, total1, total2, null_hyp
     # Calculate the z-score
     z_statistic = (sample_proportion1 - sample_proportion2 - null_hypothesis) / standard_error
 
+    # Calculate the critical value for the given confidence level
     if confidence == 0.1:
         critical_value = 1.645
     elif confidence == 0.05:
@@ -93,38 +98,41 @@ def perform_two_proportion_test(successes1, successes2, total1, total2, null_hyp
         p_value = 2 * (1 - norm.cdf(abs(z_statistic)))
 
     # Calculate the lower and upper bounds
-    lower_bound = (sample_proportion1 - sample_proportion2) - z_statistic * standard_error
-    upper_bound = (sample_proportion1 - sample_proportion2) + z_statistic * standard_error
+    confidence_critical_value = norm.ppf(1 - confidence/2)
+    margin_of_error = confidence_critical_value * standard_error
+    lower_bound = (sample_proportion1 - sample_proportion2) - margin_of_error
+    upper_bound = (sample_proportion1 - sample_proportion2) + margin_of_error
 
     return z_statistic, p_value, critical_value, reject_null_hypothesis, lower_bound, upper_bound
+
 
 
 
 @app.route("/histogram", methods=['GET'])
 def data():
     # Load the CSV file into a pandas DataFrame
-    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
 
-    # Sample 100 confidence values 5000 times and create a histogram
-    sample = []
+    # Extract confidences from the dataset
+    confidences = df['CONFIDENCE'].astype(float)
+
+    # Take 100 random samples of confidences and sum them
+    samples = []
     for i in range(5000):
-        subset = df['CONFIDENCE'].sample(n=100, random_state=i)
-        sample.extend(subset.tolist())
-    histogram, edges = np.histogram(sample, bins=50)
+        sample = np.random.choice(confidences, 100)
+        list_sample_sum = sample.sum()
+        samples.append([list_sample_sum.tolist()])
 
-    # Convert the histogram data to a JSON format
-    histogramData = []
-    for i in range(len(histogram)):
-        histogramData.append({'CONFIDENCE': int(edges[i]), 'COUNT': int(histogram[i])})
-
+    min = np.min(samples)
 
     # Return the histogram data as JSON
-    return render_template("histogram.html", histogramData=histogramData)
+    return render_template("histogram.html", histogramData=samples, min=min)
+
 
 @app.route("/hypothesis", methods=['GET', 'POST'])
 def hypothesis():
     # Load the CSV file into a pandas DataFrame
-    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
     # Get the unique species values
     species_values = df['SPECIES'].unique().tolist()
 
@@ -214,7 +222,7 @@ import pandas as pd
 # Assuming you have a pandas dataframe named "df" containing your dataset
 @app.route("/pie", methods=['GET'])
 def pie():
-    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
 
     chart_data = [("SPECIES", "COUNT(*)")]
     for species, count in df.groupby("SPECIES")["PRIMARY_KEY"].count().items():
@@ -224,7 +232,7 @@ def pie():
 
 @app.route("/bar", methods=['GET'])
 def bar():
-    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
 
     chart_data = [("SPECIES", "COUNT(*)")]
     for species, count in df.groupby("SPECIES")["PRIMARY_KEY"].count().items():
@@ -255,5 +263,3 @@ def conf():
 if __name__ == '__main__':
     app.run()
 
-if __name__ == "__main__":
-    app.run(debug=True)
