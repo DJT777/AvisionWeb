@@ -39,6 +39,7 @@ def perform_proportion_test(successes, total, null_hypothesis, alternative, conf
     elif alternative == "Greater Than":
         reject_null_hypothesis = z_statistic > critical_value
     else:
+        critical_value = norm.ppf(1 - confidence/2)
         reject_null_hypothesis = abs(z_statistic) > critical_value
 
     # Calculate the p-value
@@ -89,7 +90,8 @@ def perform_two_proportion_test(successes1, successes2, total1, total2, null_hyp
     elif alternative == "Greater Than":
         reject_null_hypothesis = z_statistic > critical_value
     else:
-        reject_null_hypothesis = abs(z_statistic) > norm.ppf(1 - confidence/2)
+        critical_value = norm.ppf(1 - confidence/2)
+        reject_null_hypothesis = abs(z_statistic) > critical_value
 
     # Calculate the p-value
     if alternative == "Less Than":
