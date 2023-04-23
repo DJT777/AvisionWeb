@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-app = Flask(__name__, static_url_path='/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static')
+app = Flask(__name__, static_url_path='/content/AvisionWeb/WebDevBirdStats/static')
 
 
 from scipy.stats import norm
@@ -111,7 +111,7 @@ def perform_two_proportion_test(successes1, successes2, total1, total2, null_hyp
 @app.route("/histogram", methods=['GET'])
 def data():
     # Load the CSV file into a pandas DataFrame
-    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
 
     # Extract confidences from the dataset
     confidences = df['CONFIDENCE'].astype(float)
@@ -132,7 +132,7 @@ def data():
 @app.route("/hypothesis", methods=['GET', 'POST'])
 def hypothesis():
     # Load the CSV file into a pandas DataFrame
-    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
     # Get the unique species values
     species_values = df['SPECIES'].unique().tolist()
 
@@ -222,7 +222,7 @@ import pandas as pd
 # Assuming you have a pandas dataframe named "df" containing your dataset
 @app.route("/pie", methods=['GET'])
 def pie():
-    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
 
     chart_data = [("SPECIES", "COUNT(*)")]
     for species, count in df.groupby("SPECIES")["PRIMARY_KEY"].count().items():
@@ -232,7 +232,7 @@ def pie():
 
 @app.route("/bar", methods=['GET'])
 def bar():
-    df = pd.read_csv('/home/dylan/Desktop/repos/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
+    df = pd.read_csv('/content/AvisionWeb/WebDevBirdStats/static/random1000classified.csv')
 
     chart_data = [("SPECIES", "COUNT(*)")]
     for species, count in df.groupby("SPECIES")["PRIMARY_KEY"].count().items():
